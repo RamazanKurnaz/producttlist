@@ -1,7 +1,16 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Product, ProductState } from '../types/product';
 
-// Async thunk for fetching products
+const initialState: ProductState = {
+  items: [],
+  selectedProduct: null,
+  status: 'idle',
+  error: null,
+  updateStatus: 'idle',
+  updateError: null,
+  lastFetch: null
+};
+
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async () => {
@@ -11,7 +20,6 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
-// Async thunk for fetching a single product
 export const fetchProductById = createAsyncThunk(
   'products/fetchProductById',
   async (id: number) => {
@@ -21,58 +29,83 @@ export const fetchProductById = createAsyncThunk(
   }
 );
 
-const initialState: ProductState = {
-  items: [],
-  status: 'idle',
-  error: null,
-  selectedProduct: null
-};
-
 const productSlice = createSlice({
   name: 'products',
   initialState,
   reducers: {
     updateProduct: (state, action: PayloadAction<Product>) => {
-      const index = state.items.findIndex(item => item.id === action.payload.id);
+      const updatedProduct = action.payload;
+      
+      // Update in items array
+      const index = state.items.findIndex(item => item.id === updatedProduct.id);
       if (index !== -1) {
-        state.items[index] = action.payload;
+        // Preserve other fields and only update title and description
+        state.items[index] = {
+          ...state.items[index],
+          title: updatedProduct.title,
+          description: updatedProduct.description
+        };
       }
-      if (state.selectedProduct?.id === action.payload.id) {
-        state.selectedProduct = action.payload;
+      
+      // Update selected product if it's the same product
+      if (state.selectedProduct?.id === updatedProduct.id) {
+        state.selectedProduct = {
+          ...state.selectedProduct,
+          title: updatedProduct.title,
+          description: updatedProduct.description
+        };
       }
+      
+      // Update status
+      state.updateStatus = 'succeeded';
     },
     clearSelectedProduct: (state) => {
       state.selectedProduct = null;
+    },
+    setUpdateStatus: (state, action: PayloadAction<'idle' | 'loading' | 'succeeded' | 'failed'>) => {
+      state.updateStatus = action.payload;
     }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Products Cases
       .addCase(fetchProducts.pending, (state) => {
-        state.status = 'loading';
+        // Only show loading state if we don't have cached data
+        if (state.items.length === 0) {
+          state.status = 'loading';
+        }
       })
       .addCase(fetchProducts.fulfilled, (state, action: PayloadAction<Product[]>) => {
         state.status = 'succeeded';
-        state.items = action.payload;
+        // Only update items if we don't have cached data or if it's been more than 5 minutes
+        if (state.items.length === 0 || !state.lastFetch || Date.now() - state.lastFetch > 300000) {
+          state.items = action.payload;
+          state.lastFetch = Date.now();
+        }
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message || 'Something went wrong';
+        state.error = action.error.message || 'Failed to fetch products';
       })
-      // Fetch Single Product Cases
       .addCase(fetchProductById.pending, (state) => {
-        state.status = 'loading';
+        if (!state.selectedProduct) {
+          state.status = 'loading';
+        }
       })
       .addCase(fetchProductById.fulfilled, (state, action: PayloadAction<Product>) => {
         state.status = 'succeeded';
+        // Update both selectedProduct and the corresponding item in items array
         state.selectedProduct = action.payload;
+        const index = state.items.findIndex(item => item.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
       })
       .addCase(fetchProductById.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message || 'Something went wrong';
+        state.error = action.error.message || 'Failed to fetch product';
       });
   }
 });
 
-export const { updateProduct, clearSelectedProduct } = productSlice.actions;
+export const { updateProduct, clearSelectedProduct, setUpdateStatus } = productSlice.actions;
 export default productSlice.reducer;

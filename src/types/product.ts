@@ -5,15 +5,21 @@ export interface Product {
   price: number;
   category: string;
   brand: string;
-  thumbnail: string;
   rating: number;
+  thumbnail: string;
+  images: string[];
+  stock: number;
+  discountPercentage: number;
 }
 
 export interface ProductState {
   items: Product[];
+  selectedProduct: Product | null;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
-  selectedProduct: Product | null;
+  updateStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  updateError: string | null;
+  lastFetch: number | null;
 }
 
 export interface RootState {
