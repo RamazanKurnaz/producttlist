@@ -1,9 +1,10 @@
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../types/product';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { fetchProducts } from '../store/productSlice';
+import { useProductClick } from '../hooks/useProductClick';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -20,17 +21,18 @@ const ProductList: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { items, status, error } = useSelector((state: RootState) => state.products);
+  const handleProductClick = useProductClick();
 
   useEffect(() => {
-    // Only fetch if we don't have any items
     if (items.length === 0) {
       dispatch(fetchProducts());
     }
   }, [dispatch, items.length]);
 
-  const handleRowClick = (productId: number) => {
+  const handleRowClick = useCallback((productId: number) => {
+    handleProductClick(productId);
     navigate(`/product/${productId}`);
-  };
+  }, [navigate, handleProductClick]);
 
   // Only show loading state if we don't have any items
   if ((status === 'loading' || status === 'idle') && items.length === 0) {
@@ -93,7 +95,7 @@ const ProductList: FC = () => {
               mb: 2,
             }}
           >
-            Product Catalog
+            Product List 
           </Typography>
           <Typography 
             variant="subtitle1" 
@@ -104,8 +106,7 @@ const ProductList: FC = () => {
               lineHeight: 1.6,
             }}
           >
-            Browse through our collection of high-quality products
-          </Typography>
+youu can review and edit all productts here        </Typography>
         </Box>
 
         <TableContainer 

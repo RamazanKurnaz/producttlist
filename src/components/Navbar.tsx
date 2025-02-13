@@ -43,8 +43,7 @@ const Navbar: FC = () => {
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
           backdropFilter: 'blur(8px)',
           borderRadius: '30px',
-          border: '1px solid rgba(124, 58, 237, 0.1)',
-          boxShadow: '0 4px 20px rgba(124, 58, 237, 0.1)',
+          boxShadow: '0 4px 20px rgba(175, 245, 110, 0.1)',
           width: 'auto',
           maxWidth: '600px',
         }}
@@ -86,6 +85,11 @@ const Navbar: FC = () => {
                 transition: 'all 0.3s ease-in-out',
                 borderRadius: '20px',
                 mx: 0.5,
+                outline: 'none', // Tıklama outline'ını kaldırır
+                '&:focus': {     // Focus durumunda outline'ı özelleştir
+                  outline: 'none',
+                  border: '1px solid #9061F9' // İsterseniz özel border ekleyebilirsiniz
+                },
                 '&:hover': {
                   color: '#7C3AED',
                   backgroundColor: 'rgba(139, 92, 246, 0.08)',

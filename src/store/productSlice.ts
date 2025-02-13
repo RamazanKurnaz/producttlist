@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Product, ProductState } from '../types/product';
-
+// nasıl slice kullanılrı bkaak
 const initialState: ProductState = {
   items: [],
   selectedProduct: null,
@@ -26,7 +26,7 @@ export const fetchProductById = createAsyncThunk(
     const response = await fetch(`https://dummyjson.com/products/${id}`);
     const data = await response.json();
     return data;
-  }
+  } // id göre alıyor istek gene urlde
 );
 
 const productSlice = createSlice({
@@ -36,10 +36,10 @@ const productSlice = createSlice({
     updateProduct: (state, action: PayloadAction<Product>) => {
       const updatedProduct = action.payload;
       
-      // Update in items array
+      // itemleri dizide gncelle
       const index = state.items.findIndex(item => item.id === updatedProduct.id);
       if (index !== -1) {
-        // Preserve other fields and only update title and description
+        // redux güncelliyor  chatgpt 
         state.items[index] = {
           ...state.items[index],
           title: updatedProduct.title,
@@ -47,7 +47,7 @@ const productSlice = createSlice({
         };
       }
       
-      // Update selected product if it's the same product
+      
       if (state.selectedProduct?.id === updatedProduct.id) {
         state.selectedProduct = {
           ...state.selectedProduct,
@@ -56,7 +56,7 @@ const productSlice = createSlice({
         };
       }
       
-      // Update status
+      // statusu 
       state.updateStatus = 'succeeded';
     },
     clearSelectedProduct: (state) => {
@@ -69,14 +69,14 @@ const productSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
-        // Only show loading state if we don't have cached data
+        
         if (state.items.length === 0) {
           state.status = 'loading';
         }
       })
       .addCase(fetchProducts.fulfilled, (state, action: PayloadAction<Product[]>) => {
         state.status = 'succeeded';
-        // Only update items if we don't have cached data or if it's been more than 5 minutes
+ 
         if (state.items.length === 0 || !state.lastFetch || Date.now() - state.lastFetch > 300000) {
           state.items = action.payload;
           state.lastFetch = Date.now();
@@ -109,3 +109,4 @@ const productSlice = createSlice({
 
 export const { updateProduct, clearSelectedProduct, setUpdateStatus } = productSlice.actions;
 export default productSlice.reducer;
+// appdispatch mantıgı nedir amacı 

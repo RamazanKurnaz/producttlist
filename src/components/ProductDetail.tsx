@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { RootState, Product } from '../types/product';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { fetchProductById, updateProduct, clearSelectedProduct, setUpdateStatus } from '../store/productSlice';
+import { trackProductClick } from '../store/clickTrackingSlice';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -24,11 +25,14 @@ const ProductDetail: FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
+
+  
   const { selectedProduct, status, error, updateStatus } = useSelector((state: RootState) => state.products);
+  const clickCounts = useSelector((state: RootState) => state.clickTracking.clickCounts);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProduct, setEditedProduct] = useState<Product | null>(null);
 
-  // Fetch product data
+  // Fetch product data separately
   useEffect(() => {
     if (id && (!selectedProduct || selectedProduct.id !== Number(id))) {
       dispatch(fetchProductById(Number(id)));
@@ -43,14 +47,14 @@ const ProductDetail: FC = () => {
     };
   }, [dispatch]);
 
-  // Update local state when selectedProduct changes
+  //  local state ile tututor degsılıklerı prducto
   useEffect(() => {
     if (selectedProduct) {
       setEditedProduct(selectedProduct);
     }
   }, [selectedProduct]);
 
-  // Handle successful update
+  // Handle başarıyla alırsa
   useEffect(() => {
     if (updateStatus === 'succeeded') {
       setIsEditing(false);
