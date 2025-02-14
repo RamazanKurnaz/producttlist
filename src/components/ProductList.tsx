@@ -1,4 +1,4 @@
-import { FC, useEffect, useCallback } from 'react';
+import { FC, useEffect, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../types/product';
@@ -16,12 +16,18 @@ import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import { ArrowBack } from '@mui/icons-material';
+import { color } from 'chart.js/helpers';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
 
 const ProductList: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { items, status, error } = useSelector((state: RootState) => state.products);
   const handleProductClick = useProductClick();
+  const [filterText, setFilterText] = useState(''); 
 
   useEffect(() => {
     if (items.length === 0) {
@@ -33,6 +39,28 @@ const ProductList: FC = () => {
     handleProductClick(productId);
     navigate(`/product/${productId}`);
   }, [navigate, handleProductClick]);
+
+  
+  // const filteredProducts = items.filter(product => {
+  //   const searchTerm = filterText.toLowerCase();
+  //   return ( // ürün bunlardan birini içeriyiorsa gettşrsibn ürünü mantık bu
+  //     product.title.toLowerCase().includes(searchTerm) ||
+  //     product.description.toLowerCase().includes(searchTerm) ||
+  //     product.category.toLowerCase().includes(searchTerm) ||
+  //     product.price.toString().includes(searchTerm)
+  //   );
+  // });
+  const filteredProducts = items.filter(product => {
+    const searchTerm = filterText.toLowerCase();
+    const fields = [
+      product.title,
+      product.description,
+      product.category,
+      product.price.toString()
+    ].map(field => field.toLowerCase());
+    
+    return fields.some(field => field.includes(searchTerm));
+});
 
   // Only show loading state if we don't have any items
   if ((status === 'loading' || status === 'idle') && items.length === 0) {
@@ -67,21 +95,48 @@ const ProductList: FC = () => {
     );
   }
 
+  // const headers = ["Image","Product","Category","Price","Rating"];
+
+  const headers = [{
+    header:(parametre:string) => parametre,
+     color:"#7886C7"
+  },{
+    header:"Product",
+    color:"#7886C7"
+  },
+  {
+    header:"Category",
+    color:"#FFF2F2"
+  },
+  {
+    header:"Price",
+    color:"#7886C7"
+  },
+  {
+    header:"Rating",
+    color:"#7886C7"
+  },
+ ]
+
   return (
     <Box 
       sx={{
         minHeight: '100vh',
         backgroundColor: '#faf7f5',
         pt: '100px',
-        pb: 4,
-        px: 3,
+        width: '100%',
+        m: 0,
+        p: 0
       }}
     >
       <Container 
         maxWidth={false}
+        disableGutters
         sx={{ 
-          height: '100%',
-          maxWidth: '1400px',
+          width: '100%',
+          maxWidth: '100%',
+          m: 0,
+          p: 0
         }}
       >
         <Box mb={4} textAlign="center">
@@ -106,7 +161,40 @@ const ProductList: FC = () => {
               lineHeight: 1.6,
             }}
           >
-youu can review and edit all productts here        </Typography>
+            You can review and edit all products here
+          </Typography>
+          
+          {/* ARAMA BUTON FILTRE */}
+          <Box sx={{ mt: 3, mb: 2, maxWidth: 500, mx: 'auto' }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Search products..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: '#9061F9' }} />
+                  </InputAdornment>
+                ),
+                sx: {
+                  backgroundColor: 'white',
+                  '&:hover': {
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#9061F9',
+                    },
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(144, 97, 249, 0.2)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#9061F9',
+                  },
+                }
+              }}
+            />
+          </Box>
         </Box>
 
         <TableContainer 
@@ -120,20 +208,22 @@ youu can review and edit all productts here        </Typography>
             backdropFilter: 'blur(8px)',
             height: 'calc(100vh - 250px)',
             overflowY: 'auto',
+            width: '100%' // Added full width
           }}
         >
-          <Table>
+          <Table sx={{ width: '100%' }}> 
             <TableHead>
               <TableRow sx={{ backgroundColor: '#f5f3ff' }}>
-                <TableCell width={100} sx={{ fontWeight: 600, color: '#6b7280' }}>Image</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#6b7280' }}>Product</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#6b7280' }}>Category</TableCell>
+                {/* <TableCell width={100} sx={{ fontWeight: 600, color: '#6b7280' }}>Image</TableCell> */}
+                
+                {headers.map((header, index) => (<TableCell sx={{ fontWeight: 600, color: header.color ?? 'gray' }}>{typeof header.header === "string" ? header.header : header.header?.("Image")}</TableCell> ))}
+                {/* <TableCell sx={{ fontWeight: 600, color: '#6b7280' }}>Category</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 600, color: '#6b7280' }}>Price</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 600, color: '#6b7280' }}>Rating</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 600, color: '#6b7280' }}>Rating</TableCell> */}
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((product) => (
+              {filteredProducts.map((product) => (
                 <TableRow
                   key={product.id}
                   onClick={() => handleRowClick(product.id)}
