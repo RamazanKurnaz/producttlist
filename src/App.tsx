@@ -4,13 +4,13 @@ import { Provider } from 'react-redux';
 import { store } from './store/store';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
-import About from './pages/About';
+import ClicksCount from './pages/ClicksCount';
 import Settings from './pages/Settings';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
-import NotFound from './components/NotFound';
+import NotFound from './pages/NotFound';
 
 const NavLink: FC<{ to: string, children: React.ReactNode }> = ({ to, children }) => {
   const location = useLocation();
@@ -100,7 +100,7 @@ const App: FC = () => {
                   }}
                 >
                   <NavLink to="/">Ürünler</NavLink>
-                  <NavLink to="/about">Analitik</NavLink>
+                  <NavLink to="/analitik">Analitik</NavLink>
                   <NavLink to="/settings">Ayarlar</NavLink>
                 </Paper>
               </Box>
@@ -112,7 +112,7 @@ const App: FC = () => {
             <Routes>
               <Route path="/" element={<ProductList />} />
               <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/about" element={<About />} />
+              <Route path="/analitik" element={<ClicksCount />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

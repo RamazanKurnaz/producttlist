@@ -12,6 +12,10 @@ rootElement.style.overflow = 'hidden';
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <App />
+    <div className="Root">
+      <App />
+    </div>
   </React.StrictMode>
 );
+
+

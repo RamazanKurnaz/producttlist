@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState, Product } from '../types/product';
 import { useAppDispatch } from '../hooks/useAppDispatch';
-import { fetchProductById, updateProduct, clearSelectedProduct, setUpdateStatus } from '../store/productSlice';
+
+import { updateProduct, setSelectedProduct, clearSelectedProduct, setUpdateStatus } from '../store/productSlice';
+// fetchProductById'yi kaldırdık
 import { trackProductClick } from '../store/clickTrackingSlice';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -30,21 +32,33 @@ const ProductDetail: FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
-
+  const { selectedProduct, items, status, error, updateStatus } = useSelector(
+    (state: RootState) => state.products
+  );
   
-  const { selectedProduct, status, error, updateStatus } = useSelector((state: RootState) => state.products);
-  const clickCounts = useSelector((state: RootState) => state.clickTracking.clickCounts);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProduct, setEditedProduct] = useState<Product | null>(null);
 
-  // Fetch product data separately
+  // İlk render'da ve id değiştiğinde çalışacak
   useEffect(() => {
-    if (id && (!selectedProduct || selectedProduct.id !== Number(id))) {
-      dispatch(fetchProductById(Number(id)));
+    if (id) {
+      const numericId = Number(id);
+      const productFromStore = items.find(item => item.id === numericId);
+      
+      if (productFromStore && !selectedProduct) {
+        dispatch(setSelectedProduct(numericId));
+      }
     }
-  }, [dispatch, id, selectedProduct]);
+  }, [id, items, selectedProduct, dispatch]);
 
-  // Cleanup on unmount
+  // selectedProduct değiştiğinde editedProduct'ı güncelle
+  useEffect(() => {
+    if (selectedProduct && !editedProduct) {
+      setEditedProduct(selectedProduct);
+    }
+  }, [selectedProduct]); // editedProduct'ı dependency array'den çıkardık
+
+  // Cleanup
   useEffect(() => {
     return () => {
       dispatch(clearSelectedProduct());

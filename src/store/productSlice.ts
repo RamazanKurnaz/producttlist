@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Product, ProductState } from '../types/product';
-// nasıl slice kullanılrı bkaak
+
 const initialState: ProductState = {
   items: [],
   selectedProduct: null,
@@ -11,6 +11,7 @@ const initialState: ProductState = {
   lastFetch: null
 };
 
+// Tek bir fetch fonksiyonu bırakalım
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async () => {
@@ -20,15 +21,6 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
-export const fetchProductById = createAsyncThunk(
-  'products/fetchProductById',
-  async (id: number) => {
-    const response = await fetch(`https://dummyjson.com/products/${id}`);
-    const data = await response.json();
-    return data;
-  } // id göre alıyor istek gene urlde
-);
-
 const productSlice = createSlice({
   name: 'products',
   initialState,
@@ -36,32 +28,30 @@ const productSlice = createSlice({
     updateProduct: (state, action: PayloadAction<Product>) => {
       const updatedProduct = action.payload;
       
-      // itemleri dizide gncelle
+      // Hem items hem de selectedProduct'ı tam olarak güncelle
       const index = state.items.findIndex(item => item.id === updatedProduct.id);
       if (index !== -1) {
-        // redux güncelliyor  chatgpt 
-        state.items[index] = {
-          ...state.items[index],
-          title: updatedProduct.title,
-          description: updatedProduct.description
-        };
+        state.items[index] = updatedProduct;
       }
-      
       
       if (state.selectedProduct?.id === updatedProduct.id) {
-        state.selectedProduct = {
-          ...state.selectedProduct,
-          title: updatedProduct.title,
-          description: updatedProduct.description
-        };
+        state.selectedProduct = updatedProduct;
       }
       
-      // statusu 
       state.updateStatus = 'succeeded';
     },
+    
+    setSelectedProduct: (state, action: PayloadAction<number>) => {
+      const product = state.items.find(item => item.id === action.payload);
+      if (product) {
+        state.selectedProduct = product;
+      }
+    },
+    
     clearSelectedProduct: (state) => {
       state.selectedProduct = null;
     },
+    
     setUpdateStatus: (state, action: PayloadAction<'idle' | 'loading' | 'succeeded' | 'failed'>) => {
       state.updateStatus = action.payload;
     }
@@ -69,44 +59,27 @@ const productSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
-        
         if (state.items.length === 0) {
           state.status = 'loading';
         }
       })
       .addCase(fetchProducts.fulfilled, (state, action: PayloadAction<Product[]>) => {
         state.status = 'succeeded';
- 
-        if (state.items.length === 0 || !state.lastFetch || Date.now() - state.lastFetch > 300000) {
-          state.items = action.payload;
-          state.lastFetch = Date.now();
-        }
+        state.items = action.payload;
+        state.lastFetch = Date.now();
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Failed to fetch products';
-      })
-      .addCase(fetchProductById.pending, (state) => {
-        if (!state.selectedProduct) {
-          state.status = 'loading';
-        }
-      })
-      .addCase(fetchProductById.fulfilled, (state, action: PayloadAction<Product>) => {
-        state.status = 'succeeded';
-        // Update both selectedProduct and the corresponding item in items array
-        state.selectedProduct = action.payload;
-        const index = state.items.findIndex(item => item.id === action.payload.id);
-        if (index !== -1) {
-          state.items[index] = action.payload;
-        }
-      })
-      .addCase(fetchProductById.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.error.message || 'Failed to fetch product';
       });
   }
 });
 
-export const { updateProduct, clearSelectedProduct, setUpdateStatus } = productSlice.actions;
+export const {
+  updateProduct,
+  clearSelectedProduct,
+  setUpdateStatus,
+  setSelectedProduct
+} = productSlice.actions;
+
 export default productSlice.reducer;
-// appdispatch mantıgı nedir amacı 

@@ -27,7 +27,7 @@ ChartJS.register(
   Title
 );
 
-const About: FC = () => {
+const ClicksCount: FC = () => {
   const { clickCounts } = useSelector((state: RootState) => state.clickTracking);
   const { items } = useSelector((state: RootState) => state.products);
 
@@ -77,7 +77,7 @@ const About: FC = () => {
 
   return (
     <Box sx={{ p: 3, maxWidth: '1200px', margin: '0 auto' }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography sx={{padding:5 }} variant="h4" gutterBottom>
         Product Click Analytics
       </Typography>
       <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
@@ -92,4 +92,4 @@ const About: FC = () => {
   );
 };
 
-export default About;
+export default ClicksCount;
